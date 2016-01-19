@@ -2,6 +2,10 @@
 Zini
 ====
 
+.. image:: https://travis-ci.org/zzzsochi/zini.svg?branch=master
+    :target: https://travis-ci.org/zzzsochi/zini
+    :align: right
+
 INI-files parser with schemes and types
 
 ------------------
