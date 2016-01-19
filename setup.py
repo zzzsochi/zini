@@ -18,6 +18,6 @@ setup(
     url='',
     keywords=['ini', 'settings', 'config', 'configure', 'configuration'],
     py_modules=['zini'],
-    install_requires=[],
+    install_requires=["python-dateutil"],
     tests_require=['pytest'],
 )

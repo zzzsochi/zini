@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 import pytest
 
 from zini import Section, V, NOT_SET, ParseError
@@ -76,6 +78,14 @@ def test_set_bad_key():
         ('set float = 3.14', 'set float', 3.14, float),
         ('str-ing = "string"', 'str-ing', 'string', str),
         ("str-ing = 'string'", 'str-ing', 'string', str),
+        ("dt = 2005-01-13T18:00", 'dt', datetime(2005, 1, 13, 18, 0), datetime),
+        ("dt = 2005-01-13T18:00Z", 'dt',
+            datetime(2005, 1, 13, 18, 0, tzinfo=timezone.utc), datetime),
+        ("dt = 2005-01-13T18:00:10Z", 'dt',
+            datetime(2005, 1, 13, 18, 0, 10, tzinfo=timezone.utc), datetime),
+        ("dt = 2005-01-13 18:00:10Z", 'dt',
+            datetime(2005, 1, 13, 18, 0, 10, tzinfo=timezone.utc), datetime),
+        ("dt = 2005-01-13", 'dt', datetime(2005, 1, 13), datetime),
     ])
 def test_parse_keyvalue(l, k, v, t):
     s = Section()
@@ -100,6 +110,8 @@ def test_parse_keyvalue(l, k, v, t):
         "k=v = 13",
         "k = ",
         "= v",
+        "k = 2005-01-13Z",
+        "k = 2005-13-01",
     ])
 def test_parse_bad_keyvalue(l):
     s = Section()

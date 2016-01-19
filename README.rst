@@ -56,7 +56,23 @@ Supported types
 :int: simple numeric type, e.g. ``key = 13``
 :float: float type, e.g. ``key = 3.14``
 :string: strings *always* uses quotes, e.g. ``key = "some string"``
-.. :datetime:
+:datetime: datetime formated like as ISO 8601:
+
+    * ``YYYY-MM-DD``
+    * ``YYYY-MM-DD hh:mm``
+    * ``YYYY-MM-DD hh:mm:ss``
+    * ``YYYY-MM-DD hh:mm:ss.sss``
+
+    When the time, you can set timezone as ``Z`` or ``±hh:mm``.
+
+    E.g.:
+
+    * ``key = 2005-01-13``
+    * ``key = 2005-01-13 18:00:05``
+    * ``key = 2005-01-13 15:00:05 +03:00``
+    * ``key = 2005-01-13 15:00Z``
+
+
 .. :timedelta:
 
 

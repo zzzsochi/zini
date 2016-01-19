@@ -1,9 +1,18 @@
 from collections.abc import MutableMapping
 from collections import namedtuple
+from datetime import datetime
+import re
+
+import dateutil.parser
 
 __version__ = '0.0.1'
 
 NOT_SET = type('NOT_SET', (), {})
+RE_ISO8601 = re.compile(
+    '^\d\d\d\d-\d\d-\d\d'  # YYYY-MM-DD
+    '(?:[\sT]\d\d:\d\d(?::\d\d(?:\.\d+)?)?'  # [\sT]hh:mm:ss.mmm
+    '(?:\s?[+-]\d\d(?::\d\d)?)?)?(?:[zZ])?$'  # [+-]hh:mm
+)
 
 V = namedtuple('V', ('type', 'default'))
 
@@ -140,7 +149,7 @@ class Section(MutableMapping):
         )
 
     def _check_type(self, t):
-        if t not in [str, int, float, bool]:
+        if t not in [bool, int, float, datetime, str]:
             raise TypeError("unknown type: {t.__name__}".format(t=t))
 
     def _parse_keyvalue(self, n, line):
@@ -148,7 +157,12 @@ class Section(MutableMapping):
         if not key or not value:
             raise ParseError(n, line)
 
-        parsers = [self._get_bool, int, float, self._get_str]
+        parsers = [
+            self._get_bool,
+            int, float,
+            self._get_datetime,
+            self._get_str,
+        ]
 
         for func in parsers:
             try:
@@ -182,3 +196,10 @@ class Section(MutableMapping):
             return value[1:-1]
         else:
             raise ValueError
+
+    @staticmethod
+    def _get_datetime(value):
+        if not RE_ISO8601.match(value):
+            raise ValueError
+        else:
+            return dateutil.parser.parse(value)
