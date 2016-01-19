@@ -6,6 +6,11 @@ Zini
     :target: https://travis-ci.org/zzzsochi/zini
     :align: right
 
+.. image:: https://coveralls.io/repos/github/zzzsochi/zini/badge.svg?branch=master
+    :target: https://coveralls.io/github/zzzsochi/zini?branch=master
+    :align: right
+
+
 INI-files parser with schemes and types
 
 ------------------
