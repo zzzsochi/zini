@@ -56,7 +56,7 @@ Supported types
 :int: simple numeric type, e.g. ``key = 13``
 :float: float type, e.g. ``key = 3.14``
 :string: strings *always* uses quotes, e.g. ``key = "some string"``
-:datetime: datetime formated like as ISO 8601:
+:datetime: datetime formated like as ISO 8601
 
     * ``YYYY-MM-DD``
     * ``YYYY-MM-DD hh:mm``
@@ -73,12 +73,18 @@ Supported types
     * ``key = 2005-01-13 15:00Z``
 
 
-.. :timedelta:
+:timedelta: durations:
+
+    * ``key = 20m`` — 20 minutes
+    * ``key = 10h2m`` — 10 hours and 2 minutes
+    * ``key = 1w2s`` — one week (7 days) and 2 seconds
+    * ``key = 1s20ms`` — one 2 second and 20 milliseconds
+    * ``key = 1w1d1h1m1s1ms`` — 694861001 milliseconds
 
 
--------
-Example
--------
+--------
+Examples
+--------
 
 ``$ cat tests/test.ini``
 

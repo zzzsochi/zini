@@ -1,6 +1,6 @@
 from collections.abc import MutableMapping
 from collections import namedtuple
-from datetime import datetime
+from datetime import datetime, timedelta
 import re
 
 import dateutil.parser
@@ -13,6 +13,13 @@ RE_ISO8601 = re.compile(
     '(?:[\sT]\d\d:\d\d(?::\d\d(?:\.\d+)?)?'  # [\sT]hh:mm:ss.mmm
     '(?:\s?[+-]\d\d(?::\d\d)?)?)?(?:[zZ])?$'  # [+-]hh:mm
 )
+
+RE_TIMEDELTA = re.compile(
+    '^(?:(?P<weeks>\d+)w)?(?:(?P<days>\d+)d)?'  # w, d
+    '(?:(?P<hours>\d+)h)?(?:(?P<minutes>\d+)m)?'  # h, m
+    '(?:(?P<seconds>\d+)s)?(?:(?P<milliseconds>\d+)ms)?$'  # s, ms
+)
+
 
 V = namedtuple('V', ('type', 'default'))
 
@@ -149,7 +156,7 @@ class Section(MutableMapping):
         )
 
     def _check_type(self, t):
-        if t not in [bool, int, float, datetime, str]:
+        if t not in [bool, int, float, str, datetime, timedelta]:
             raise TypeError("unknown type: {t.__name__}".format(t=t))
 
     def _parse_keyvalue(self, n, line):
@@ -160,8 +167,9 @@ class Section(MutableMapping):
         parsers = [
             self._get_bool,
             int, float,
-            self._get_datetime,
             self._get_str,
+            self._get_datetime,
+            self._get_timetelta,
         ]
 
         for func in parsers:
@@ -203,3 +211,12 @@ class Section(MutableMapping):
             raise ValueError
         else:
             return dateutil.parser.parse(value)
+
+    @staticmethod
+    def _get_timetelta(value):
+        res = RE_TIMEDELTA.match(value)
+        if not res:
+            raise ValueError
+
+        res = {k: int(v) for k, v in res.groupdict().items() if v}
+        return timedelta(**res)
