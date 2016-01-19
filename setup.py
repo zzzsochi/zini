@@ -15,7 +15,7 @@ setup(
     ],
     author='Alexander Zelenyak',
     author_email='zzz.sochi@gmail.com',
-    url='',
+    url='https://github.com/zzzsochi/zini',
     keywords=['ini', 'settings', 'config', 'configure', 'configuration'],
     py_modules=['zini'],
     install_requires=["python-dateutil"],
