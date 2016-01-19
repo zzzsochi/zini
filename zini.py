@@ -19,10 +19,6 @@ class ParseError(Exception):
 
 
 class Zini(MutableMapping):
-    _file_name = None
-    _content = None
-    _result = None
-
     def __init__(self, **sections):
         self._sections = {}
 
@@ -61,37 +57,13 @@ class Zini(MutableMapping):
             repr(self._sections),
         )
 
-    @property
-    def file_name(self):
-        return self._file_name
-
-    @property
-    def content(self):
-        return self._content
-
-    @property
-    def result(self):
-        return self._result
-
     def read(self, file_name):
-        if self.file_name is not None:
-            raise ValueError("other file is already readed: {!r}"
-                             "".format(self.file_name))
-        else:
-            self._file_name = file_name
-
         with open(file_name) as f:
             content = f.read()
 
         return self.parse(content)
 
     def parse(self, content):
-        if self.content is not None:
-            raise ValueError("already parsed")
-        else:
-            content = content
-            self._content = content
-
         result = {}
 
         section = None
@@ -127,7 +99,6 @@ class Zini(MutableMapping):
                 if v.default is not NOT_SET:
                     result[name].setdefault(key, v.default)
 
-        self._result = result
         return result
 
 

@@ -71,25 +71,10 @@ string = "some string"
 
     z = Zini(first={'def': 111}, second={'boolean': False})
     res = z.parse(content)
-    assert z.content
-    assert res is z.result
     assert res == {
         'first': {'boolean': False, 'def': 111, 'integer': 13},
         'second': {'boolean': True, 'string': 'some string'},
     }
-
-
-def test_parse_already():
-    content = """\
-[first]
-boolean = false
-integer = 13
-"""
-    z = Zini()
-    z.parse(content)
-
-    with pytest.raises(ValueError):
-        z.parse(content)
 
 
 def test_parse_bad_first_section_place():
@@ -134,9 +119,6 @@ def test_read():
 
     z = Zini(first={'def': 111}, second={'boolean': False})
     res = z.read(path)
-    assert z.file_name == path
-    assert z.content
-    assert res is z.result
     assert res == {
         'first': {'boolean': False, 'def': 111, 'integer': 13},
         'second': {'boolean': True, 'string': 'some string'},
@@ -149,17 +131,6 @@ def test_read_bad():
 
     z = Zini(first={'def': 111}, second={'boolean': False})
     with pytest.raises(ParseError):
-        z.read(path)
-
-
-def test_read_already():
-    d = os.path.dirname(__file__)
-    path = os.path.join(d, 'test.ini')
-
-    z = Zini(first={'def': 111}, second={'boolean': False})
-    z.read(path)
-
-    with pytest.raises(ValueError):
         z.read(path)
 
 
