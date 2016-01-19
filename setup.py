@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='zini',
-    version='0.0.1',
+    version='1.0.0',
     description='INI-files parser with schemes and types',
     # long_description=README,
     classifiers=[
