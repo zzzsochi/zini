@@ -113,6 +113,16 @@ integer: 13
         z.parse(content)
 
 
+def test_defaults():
+    z = Zini()
+    z['first']['int'] = 1
+    z['first']['str'] = str
+    z['second']['int'] = 2
+    z['third']['bool'] = bool
+
+    assert z.defaults == {'first': {'int': 1}, 'second': {'int': 2}}
+
+
 def test_read():
     d = os.path.dirname(__file__)
     path = os.path.join(d, 'test.ini')

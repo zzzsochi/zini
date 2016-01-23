@@ -117,6 +117,10 @@ class Zini(MutableMapping):
 
         return result
 
+    @property
+    def defaults(self):
+        return self.parse('')
+
 
 class Section(MutableMapping):
     def __init__(self, data=None):
