@@ -113,7 +113,7 @@ class Zini(MutableMapping):
             # set defaults
             for key, v in sector.items():
                 if v.default is not NOT_SET:
-                    result[name].setdefault(key, v.default)
+                    result.setdefault(name, {}).setdefault(key, v.default)
 
         return result
 
