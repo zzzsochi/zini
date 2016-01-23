@@ -74,12 +74,16 @@ class Zini(MutableMapping):
         )
 
     def read(self, file_name):
+        """ Read a file for parsing
+        """
         with open(file_name) as f:
             content = f.read()
 
         return self.parse(content)
 
     def parse(self, content):
+        """ Parse data from string
+        """
         result = {}
 
         section = None
@@ -119,6 +123,10 @@ class Zini(MutableMapping):
 
     @property
     def defaults(self):
+        """ Return default values
+
+        Equal of `zini.parse('')`.
+        """
         return self.parse('')
 
 
