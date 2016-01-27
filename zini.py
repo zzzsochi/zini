@@ -86,7 +86,7 @@ class Zini(MutableMapping):
         """
         result = {}
 
-        section = None
+        section_parser = None
 
         for n, line in enumerate(content.split('\n')):
             line = line.rstrip()
@@ -100,18 +100,28 @@ class Zini(MutableMapping):
             elif line.startswith(' '):
                 # indentation not allowed for future b/c
                 raise ParseError(n, line)
+
             elif line.startswith('[') and line.endswith(']'):
                 # setup section
-                section = line[1:-1]
+                if section_parser is not None:
+                    result[section_parser.name] = section_parser.parse()
+
+                name = line[1:-1]
+                section_parser = self[name].parser(self[name], name)
+
             elif '=' not in line:
                 # must be keyvalue
                 raise ParseError(n, line)
-            elif section is None:
+            elif section_parser is None:
                 # first keyvalue is not sector
                 raise ParseError(n, line)
             else:
-                key, value = self[section]._parse_keyvalue(n, line)
-                result.setdefault(section, {})[key] = value
+                # add line to section
+                section_parser.append(n, line)
+
+        else:
+            if section_parser is not None:
+                result[section_parser.name] = section_parser.parse()
 
         for name, sector in self.items():
             # set defaults
@@ -130,48 +140,29 @@ class Zini(MutableMapping):
         return self.parse('')
 
 
-class Section(MutableMapping):
-    def __init__(self, data=None):
-        self._data = {}
-        if data is not None:
-            for k, v in data.items():
-                self[k] = v
+class SectionParser:
+    types = bool, int, float, str, datetime, timedelta
 
-    def __getitem__(self, key):
-        return self._data[key]
+    def __init__(self, section, name):
+        self.section = section
+        self.name = name
+        self.lines = []
 
-    def __setitem__(self, key, value):
-        if not isinstance(key, str):
-            raise TypeError("only strings is allowed for keys")
-        elif isinstance(value, type):
-            v = V(value, NOT_SET)
-        else:
-            v = V(type(value), value)
+    def append(self, n, line):
+        self.lines.append((n, line))
 
-        self._check_type(v.type)
+    def parse(self):
+        result = {}
 
-        self._data[key] = v
+        for n, line in self.lines:
+            key, value = self._parse_keyvalue(n, line)
+            result[key] = value
 
-    def __delitem__(self, key):
-        del self._data[key]
-
-    def __iter__(self):  # pragma: no cover
-        return iter(self._data)
-
-    def __len__(self):
-        return len(self._data)
-
-    def __repr__(self):
-        return "{}({})".format(
-            self.__class__.__name__,
-            repr(self._data),
-        )
-
-    def _check_type(self, t):
-        if t not in [bool, int, float, str, datetime, timedelta]:
-            raise TypeError("unknown type: {t.__name__}".format(t=t))
+        return result
 
     def _parse_keyvalue(self, n, line):
+        section = self.section
+
         key, value = (i.strip() for i in line.split('=', 1))
         if not key or not value:
             raise ParseError(n, line)
@@ -193,7 +184,7 @@ class Section(MutableMapping):
         else:
             raise ParseError(n, line)
 
-        if key in self and not isinstance(value, self[key].type):
+        if key in section and not isinstance(value, section[key].type):
             raise ParseError(n, line)
         else:
             return key, value
@@ -232,3 +223,47 @@ class Section(MutableMapping):
 
         res = {k: int(v) for k, v in res.groupdict().items() if v}
         return timedelta(**res)
+
+
+class Section(MutableMapping):
+    parser = SectionParser
+
+    def __init__(self, data=None):
+        self._data = {}
+        if data is not None:
+            for k, v in data.items():
+                self[k] = v
+
+    def __getitem__(self, key):
+        return self._data[key]
+
+    def __setitem__(self, key, value):
+        if not isinstance(key, str):
+            raise TypeError("only strings is allowed for keys")
+        elif isinstance(value, type):
+            v = V(value, NOT_SET)
+        else:
+            v = V(type(value), value)
+
+        self._check_type(v.type)
+
+        self._data[key] = v
+
+    def __delitem__(self, key):
+        del self._data[key]
+
+    def __iter__(self):  # pragma: no cover
+        return iter(self._data)
+
+    def __len__(self):
+        return len(self._data)
+
+    def __repr__(self):
+        return "{}({})".format(
+            self.__class__.__name__,
+            repr(self._data),
+        )
+
+    def _check_type(self, t):
+        if t not in self.parser.types:
+            raise TypeError("unknown type: {t.__name__}".format(t=t))
