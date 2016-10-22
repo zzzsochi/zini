@@ -1,68 +1,70 @@
 import pytest
 
-from zini import Section, V, NOT_SET
+import zini
 
 
 def test_create_empty():
-    s = Section()
+    s = zini.Section()
     assert not s
 
 
 def test_create():
-    s = Section({'a': int})
+    s = zini.Section({'a': int})
     assert s
     assert 'a' in s
 
 
 def test_del():
-    s = Section()
+    s = zini.Section()
     s['a'] = int
     assert s
     del s['a']
     assert not s
 
 
-@pytest.mark.parametrize('t', [bool, int, float, str])
-def test_set_type(t):
-    s = Section()
+@pytest.mark.parametrize('t, parser_class', [
+    (bool, zini.BooleanParser),
+    (int, zini.IntegerParser),
+    (float, zini.FloatParser),
+    (str, zini.StringParser),
+])
+def test_set_type(t, parser_class):
+    s = zini.Section()
     s['a'] = t
     assert s
-    assert isinstance(s['a'], V)
-    assert s['a'].type is t
-    assert s['a'].default is NOT_SET
+    assert isinstance(s['a'], parser_class)
 
 
-@pytest.mark.parametrize(
-    'v, t',
-    [(True, bool), (13, int), (3.14, float), ("string", str)])
-def test_set_value(v, t):
-    s = Section()
-    s['a'] = v
+def test_set_parser():
+    s = zini.Section()
+    parser = zini.BooleanParser()
+    s['a'] = parser
+    assert s['a'] is parser
 
+
+@pytest.mark.parametrize('t, parser_class', [
+    (True, zini.BooleanParser),
+    (False, zini.BooleanParser),
+    (13, zini.IntegerParser),
+    (3.14, zini.FloatParser),
+    ("string", zini.StringParser),
+])
+def test_set_default(t, parser_class):
+    s = zini.Section()
+    s['a'] = t
     assert s
-    assert isinstance(s['a'], V)
-    assert s['a'].type is t
-    assert s['a'].default == v
+    assert isinstance(s['a'], parser_class)
 
 
-@pytest.mark.parametrize('t', [Section, list, dict])
+@pytest.mark.parametrize('t', [zini.Section, object(), object])
 def test_set_bad_type(t):
-    s = Section()
-
-    with pytest.raises(TypeError):
-        s['a'] = t
-
-
-@pytest.mark.parametrize('v', [Section(), list(), dict()])
-def test_set_bad_value(v):
-    s = Section()
-
-    with pytest.raises(TypeError):
-        s['a'] = v
+    s = zini.Section()
+    s['a'] = t
+    assert isinstance(s['a'], zini.GenericParser)
 
 
 def test_set_bad_key():
-    s = Section()
+    s = zini.Section()
 
     with pytest.raises(TypeError):
         s[13] = int

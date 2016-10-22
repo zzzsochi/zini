@@ -2,32 +2,32 @@ import os
 
 import pytest
 
-from zini import Zini, Section, V, ParseError
+import zini
 
 
 def test_create_empty():
-    z = Zini()
+    z = zini.Zini()
     assert not z
 
 
 def test_create():
-    z = Zini(s={'i': int, 's': 'str'})
+    z = zini.Zini(s={'i': int, 's': 'str'})
     assert z
     assert 's' in z
-    assert isinstance(z['s'], Section)
+    assert isinstance(z['s'], zini.Section)
     assert len(z['s']) == 2
 
 
 def test_get_not_exist():
-    z = Zini()
+    z = zini.Zini()
     s = z['sect']
-    assert isinstance(s, Section)
+    assert isinstance(s, zini.Section)
     assert not s
     assert z
 
 
 def test_del():
-    z = Zini()
+    z = zini.Zini()
     z['sect']['a'] = int
     assert z
     del z['sect']
@@ -35,22 +35,22 @@ def test_del():
 
 
 def test_set():
-    z = Zini()
+    z = zini.Zini()
     z['s']['i'] = 13
-    assert isinstance(z['s']['i'], V)
+    assert isinstance(z['s']['i'], zini.IntegerParser)
     assert z['s']['i'].type is int
     assert z['s']['i'].default == 13
 
 
 def test_set_bad_key():
-    z = Zini()
+    z = zini.Zini()
 
     with pytest.raises(TypeError):
         z[3]['i'] = 13
 
 
 def test_set_bad_value():
-    z = Zini()
+    z = zini.Zini()
 
     with pytest.raises(TypeError):
         z["k"] = 13
@@ -68,8 +68,7 @@ integer = 13
 boolean = true
 string = "some string"
 """
-
-    z = Zini(first={'def': 111}, second={'boolean': False})
+    z = zini.Zini(first={'def': 111}, second={'boolean': False})
     res = z.parse(content)
     assert res == {
         'first': {'boolean': False, 'def': 111, 'integer': 13},
@@ -83,21 +82,9 @@ boolean = false
 [first]
 integer = 13
 """
-    z = Zini()
+    z = zini.Zini()
 
-    with pytest.raises(ParseError):
-        z.parse(content)
-
-
-def test_parse_bad_indentation():
-    content = """\
-[first]
-  boolean = false
-  integer = 13
-"""
-    z = Zini()
-
-    with pytest.raises(ParseError):
+    with pytest.raises(zini.ParseError):
         z.parse(content)
 
 
@@ -107,27 +94,27 @@ def test_parse_bad_keyvalue():
 boolean = false
 integer: 13
 """
-    z = Zini()
+    z = zini.Zini()
 
-    with pytest.raises(ParseError):
+    with pytest.raises(zini.ParseError):
         z.parse(content)
 
 
 def test_defaults():
-    z = Zini()
+    z = zini.Zini()
     z['first']['int'] = 1
     z['first']['str'] = str
     z['second']['int'] = 2
     z['third']['bool'] = bool
 
-    assert z.defaults == {'first': {'int': 1}, 'second': {'int': 2}}
+    assert z.defaults == {'first': {'int': 1}, 'second': {'int': 2}, 'third': {}}
 
 
 def test_read():
     d = os.path.dirname(__file__)
     path = os.path.join(d, 'test.ini')
 
-    z = Zini(first={'def': 111}, second={'boolean': False})
+    z = zini.Zini(first={'def': 111}, second={'boolean': False})
     res = z.read(path)
     assert res == {
         'first': {'boolean': False, 'def': 111, 'integer': 13},
@@ -139,11 +126,11 @@ def test_read_bad():
     d = os.path.dirname(__file__)
     path = os.path.join(d, 'test-bad.ini')
 
-    z = Zini(first={'def': 111}, second={'boolean': False})
-    with pytest.raises(ParseError):
+    z = zini.Zini(first={'def': 111}, second={'boolean': False})
+    with pytest.raises(zini.ParseError):
         z.read(path)
 
 
 def test_repr():
-    z = Zini(first={'def': 111}, second={'boolean': False})
+    z = zini.Zini(first={'def': 111}, second={'boolean': False})
     assert '111' in repr(z)
