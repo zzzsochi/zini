@@ -5,7 +5,7 @@ import re
 
 import dateutil.parser
 
-__version__ = '1.0.2'
+__version__ = '1.1.0'
 
 NOT_SET = type('NOT_SET', (), {})
 RE_ISO8601 = re.compile(
