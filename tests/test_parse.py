@@ -95,3 +95,43 @@ def test_parse_multi_error(parser):
     ]
     with pytest.raises(zini.ParseError):
         parser()(token)
+
+
+def test_parse_list():
+    token = [
+        (0, 'key ='),
+        (1, '  "string"'),
+        (2, '  13'),
+    ]
+    res = zini.ListParser()(token)
+    assert res == ['string', 13]
+
+
+def test_parse_list__set_item_parser():
+    token = [
+        (0, 'key ='),
+        (1, '  "a"'),
+        (2, '  "b"'),
+    ]
+    res = zini.ListParser(zini.StringParser())(token)
+    assert res == ['a', 'b']
+
+
+def test_parse_list__bad_type():
+    token = [
+        (0, 'key ='),
+        (1, '  "a"'),
+        (2, '  badbadbad value'),
+    ]
+    with pytest.raises(zini.ParseError):
+        zini.ListParser()(token)
+
+
+def test_parse_list__set_item_parser__bad_type():
+    token = [
+        (0, 'key ='),
+        (1, '  "a"'),
+        (2, '  13'),
+    ]
+    with pytest.raises(zini.ParseError):
+        zini.ListParser(zini.StringParser())(token)

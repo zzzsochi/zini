@@ -68,8 +68,8 @@ Supported types
     E.g.:
 
     * ``key = 2005-01-13``
-    * ``key = 2005-01-13 18:00:05``
-    * ``key = 2005-01-13 15:00:05 +03:00``
+    * ``key = 2005-01-13 18:05:00``
+    * ``key = 2005-01-13 15:05:00 +03:00``
     * ``key = 2005-01-13 15:00Z``
 
 
@@ -81,6 +81,14 @@ Supported types
     * ``key = 1s20ms`` — one 2 second and 20 milliseconds
     * ``key = 1w1d1h1m1s1ms`` — 694861001 milliseconds
 
+:list: list of values:
+
+    .. code:: ini
+
+        key =
+            "string value"
+            2005-01-13 18:00:05
+            13
 
 --------
 Examples
@@ -100,6 +108,12 @@ Examples
     boolean = true
     string = "some string"
 
+    [complex]
+    list =
+        "string"
+        "string too"
+        "else string"
+
 Simple reading
 --------------
 
@@ -115,6 +129,8 @@ Simple reading
     >>> result['first']['integer'] == 13
     True
     >>> result['second']['string'] == "some string"
+    True
+    >>> result['complex']['list'] == ["string", "string too", "else string"]
     True
 
 Types and defaults
@@ -135,3 +151,16 @@ Types and defaults
     >>> ini['second']['boolean'] = "string"  # set type and default value
     >>> result = ini.read('tests/test.ini')
     zini.ParseError: error in line 7: 'boolean = true'
+
+
+Lists of values
+~~~~~~~~~~~~~~~
+
+.. code:: python
+
+    >>> import zini
+    >>> ini = zini.Zini()
+    >>> ini['third']['generic'] = [str]
+    >>> result = ini.read('tests/test.ini')
+    ParseError: error in line 20: '    10'
+

@@ -113,6 +113,8 @@ class Zini(MutableMapping):
 
 
 class Parser:
+    default = NOT_SET
+
     def __init__(self, default=NOT_SET):
         self.default = default
 
@@ -233,6 +235,87 @@ class TimedeltaParser(OneLineParser):
             raise ValueError()
 
 
+class ListParser(Parser):
+    def __init__(self, item_parser=None, default=NOT_SET):
+        if item_parser is not None:
+            self.item_parser = item_parser
+
+        elif (default is not NOT_SET and
+                len(default) == 1 and
+                default[0] in [str, int, datetime]):
+
+            value = default[0]
+            if value is str:
+                self.item_parser = StringParser()
+            elif value is int:
+                self.item_parser = IntegerParser()
+            elif value is datetime:
+                self.item_parser = DatetimeParser()
+            else:  # pragma: no cover
+                raise NotImplementedError(default)
+
+        else:
+            self.item_parser = GenericListItemParser()
+
+        default = NOT_SET
+
+        self.default = default
+
+    def __call__(self, token):
+        self.check(token)
+
+        res = []
+        for n, line in token[1:]:
+            value = self.item_parser.parse_value(line.strip())
+            res.append(value)
+
+        return res
+
+    def check(self, token):
+        super().check(token)
+        key, value = get_keyvalue(token)
+        if value:
+            raise ParseError(*token[0])
+
+        for n, line in token[1:]:
+            try:
+                self.item_parser.check_value(line.strip())
+            except ValueError as exc:
+                raise ParseError(n, line, str(exc)) from exc
+
+
+class GenericListItemParser(OneLineParser):
+    parsers = [
+        NoneParser,
+        StringParser,
+        BooleanParser,
+        IntegerParser,
+        FloatParser,
+        DatetimeParser,
+        TimedeltaParser,
+    ]
+
+    def parse_value(self, value):
+        for parser in self.parsers:
+            try:
+                parser().check_value(value)
+                return parser().parse_value(value)
+            except ValueError:
+                pass
+        else:  # pragma: no cover
+            raise RuntimeError()
+
+    def check_value(self, value):
+        for parser in self.parsers:
+            try:
+                parser().check_value(value)
+                return
+            except ValueError:
+                pass
+        else:
+            raise ValueError()
+
+
 class GenericParser(Parser):
     parsers = [
         NoneParser,
@@ -242,6 +325,7 @@ class GenericParser(Parser):
         FloatParser,
         DatetimeParser,
         TimedeltaParser,
+        ListParser,
     ]
 
     def __call__(self, token):
@@ -275,6 +359,7 @@ class Section(MutableMapping):
         (float, FloatParser),
         (datetime, DatetimeParser),
         (timedelta, TimedeltaParser),
+        (list, ListParser),
     ]
 
     def __init__(self, data=None):
@@ -335,7 +420,7 @@ class Section(MutableMapping):
                 if isinstance(value, type):
                     return parser()
                 else:
-                    return parser(value)
+                    return parser(default=value)
         else:
             return self.default_parser_class(value)
 
@@ -416,7 +501,7 @@ def tokenize(lines):
                         raise RuntimeError(n, line)
 
         if token:
-            yield token
+            yield strip_token(token)
 
 
 def get_key(token):
@@ -453,3 +538,13 @@ def get_indent(value):
             break
 
     return n
+
+
+def strip_token(token):
+    for i, (n, line) in enumerate(reversed(token), start=-(len(token) - 1)):
+        if not line.strip():
+            del token[abs(i)]
+        else:
+            break
+
+    return token

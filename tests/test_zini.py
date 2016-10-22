@@ -119,6 +119,11 @@ def test_read():
     assert res == {
         'first': {'boolean': False, 'def': 111, 'integer': 13},
         'second': {'boolean': True, 'string': 'some string'},
+        'third': {
+            'strings': ['string 1', 'string 2'],
+            'integers': [13, 666],
+            'generic': [10, 'string', 3.14, False, None],
+        }
     }
 
 
