@@ -132,77 +132,76 @@ class Parser:
 
 
 class OneLineParser(Parser):
+    def __call__(self, token):
+        value = super().__call__(token)
+        try:
+            return self.parse_value(value)
+        except ValueError as exc:  # pragma: no cover
+            raise ParseError(*token[0]) from exc
+
+    def parse_value(self, value):  # pragma: no cover
+        raise NotImplementedError()
+
     def check(self, token):
         super().check(token)
         if len(token) > 1:
             raise ParseError(*token[1])
+
+        try:
+            self.check_value(get_keyvalue(token).value)
+        except ValueError as exc:
+            n, line = token[0]
+            raise ParseError(n, line, str(exc)) from exc
+
+    def check_value(self, value):  # pragma: no cover
+        pass
 
 
 class NoneParser(OneLineParser):
     def __init__(self):
         super().__init__()
 
-    def __call__(self, token):
-        self.check(token)
+    def parse_value(self, value):
         return None
 
-    def check(self, token):
-        super().check(token)
-        key, value = get_keyvalue(token)
+    def check_value(self, value):
         if value not in ['', 'none']:
-            raise ParseError(*token[0])
+            raise ValueError("value not empty")
 
 
 class StringParser(OneLineParser):
-    def __call__(self, token):
-        self.check(token)
-        return get_keyvalue(token).value[1:-1]
+    def parse_value(self, value):
+        return value[1:-1]
 
-    def check(self, token):
-        super().check(token)
-        value = get_keyvalue(token).value
-
+    def check_value(self, value):
         if len(value) < 2:
-            raise ParseError(*token[0])
+            raise ValueError()
         elif not (value[0] in '\'\"' and value[0] == value[-1]):
-            raise ParseError(*token[0])
+            raise ValueError()
 
 
 class BooleanParser(OneLineParser):
-    def __call__(self, token):  # pragma: no cover
-        self.check(token)
-        value = get_keyvalue(token).value.lower()
-
+    def parse_value(self, value):
         if value == 'false':
             return False
         elif value == 'true':
             return True
-        else:
-            raise RuntimeError(token)
+        else:   # pragma: no cover
+            raise ValueError()
 
-    def check(self, token):
-        super().check(token)
-        value = get_keyvalue(token).value.lower()
-
+    def check_value(self, value):
         if value not in ['false', 'true']:
-            raise ParseError(*token[0])
+            raise ValueError()
 
 
 class BaseSimpleParser(OneLineParser):
     type = None
 
-    def __call__(self, token):
-        self.check(token)
-        return self.type(get_keyvalue(token).value)
+    def parse_value(self, value):
+        return self.type(value)
 
-    def check(self, token):
-        super().check(token)
-        value = get_keyvalue(token).value
-
-        try:
-            self.type(value)
-        except ValueError as exc:
-            raise ParseError(*token[0]) from exc
+    def check_value(self, value):
+        self.type(value)
 
 
 class IntegerParser(BaseSimpleParser):
@@ -214,40 +213,24 @@ class FloatParser(BaseSimpleParser):
 
 
 class DatetimeParser(OneLineParser):
-    def __call__(self, token):
-        self.check(token)
-        value = get_keyvalue(token).value
+    def parse_value(self, value):
+        return dateutil.parser.parse(value)
 
-        try:
-            return dateutil.parser.parse(value)
-        except ValueError as exc:
-            n, line = token[0]
-            raise ParseError(n, line, str(exc)) from exc
-
-    def check(self, token):
-        super().check(token)
-        value = get_keyvalue(token).value
-
+    def check_value(self, value):
         if not RE_ISO8601.match(value):
-            raise ParseError(*token[0])
+            raise ValueError()
 
 
 class TimedeltaParser(OneLineParser):
-    def __call__(self, token):
-        self.check(token)
-        value = get_keyvalue(token).value
-
+    def parse_value(self, value):
         res = RE_TIMEDELTA.match(value)
         tdelta = {k: int(v) for k, v in res.groupdict().items() if v}
         return timedelta(**tdelta)
 
-    def check(self, token):
-        super().check(token)
-        value = get_keyvalue(token).value
-
+    def check_value(self, value):
         res = RE_TIMEDELTA.match(value)
         if not (res and [i for i in res.groups() if i]):
-            raise ParseError(*token[0])
+            raise ValueError()
 
 
 class GenericParser(Parser):
