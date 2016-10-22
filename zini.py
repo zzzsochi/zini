@@ -138,6 +138,21 @@ class OneLineParser(Parser):
             raise ParseError(*token[1])
 
 
+class NoneParser(OneLineParser):
+    def __init__(self):
+        super().__init__()
+
+    def __call__(self, token):
+        self.check(token)
+        return None
+
+    def check(self, token):
+        super().check(token)
+        key, value = get_keyvalue(token)
+        if value not in ['', 'none']:
+            raise ParseError(*token[0])
+
+
 class StringParser(OneLineParser):
     def __call__(self, token):
         self.check(token)
@@ -237,6 +252,7 @@ class TimedeltaParser(OneLineParser):
 
 class GenericParser(Parser):
     parsers = [
+        NoneParser,
         StringParser,
         BooleanParser,
         IntegerParser,

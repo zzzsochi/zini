@@ -8,6 +8,8 @@ import zini
 @pytest.mark.parametrize(
     'parser, line, value',
     [
+        (zini.NoneParser, 'null = none', None),
+        (zini.NoneParser, 'null = ', None),
         (zini.BooleanParser, 'b = true', True),
         (zini.BooleanParser, 'bool = false', False),
         (zini.IntegerParser, 'integer = 13', 13),
@@ -51,7 +53,6 @@ def test_parse_one_line(parser, line, value):
         "k = 1'",
         "k = '",
         "k=v = 13",
-        "k = ",
         "= v",
         "= 13",
         "k = 2005-01-13Z",
