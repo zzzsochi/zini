@@ -206,7 +206,8 @@ class DatetimeParser(OneLineParser):
         try:
             return dateutil.parser.parse(value)
         except ValueError as exc:
-            raise ParseError(*token[0], str(exc)) from exc
+            n, line = token[0]
+            raise ParseError(n, line, str(exc)) from exc
 
     def check(self, token):
         super().check(token)
