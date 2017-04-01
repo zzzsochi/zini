@@ -16,6 +16,7 @@ setup(
     author='Alexander Zelenyak',
     author_email='zzz.sochi@gmail.com',
     url='https://github.com/zzzsochi/zini',
+    license='BSD',
     keywords=['ini', 'settings', 'config', 'configure', 'configuration'],
     py_modules=['zini'],
     install_requires=["python-dateutil"],
