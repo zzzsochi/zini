@@ -17,7 +17,7 @@ INI-files parser with schemes and types
 Philosophy of Zini
 ------------------
 
-Application's settings must be simple!
+Application settings must be simple!
 In it should be a code or complex structures. Must be only a simple types.
 
 
@@ -35,7 +35,7 @@ JSON is uncomfortable and unextendable.
 -------------------------------
 
 The YAML is like a garden of rakes. It's very complex format.
-I do not need all it's futures.
+I do not need all it's features.
 
 
 `Configparser <https://docs.python.org/3/library/configparser.html>`_?
@@ -43,8 +43,8 @@ I do not need all it's futures.
 
 1. Configparser is ugly;
 2. Configparser is overengineered;
-3. Configparser is not have type casting;
-4. Configparser is not have type checking;
+3. Configparser does not have type casting;
+4. Configparser does not have type checking;
 5. Configparser is... configparser.
 
 
@@ -56,14 +56,14 @@ Supported types
 :int: simple numeric type, e.g. ``key = 13``
 :float: float type, e.g. ``key = 3.14``
 :string: strings *always* uses quotes, e.g. ``key = "some string"``
-:datetime: datetime formated like as ISO 8601
+:datetime: datetime formated as ISO 8601
 
     * ``YYYY-MM-DD``
     * ``YYYY-MM-DD hh:mm``
     * ``YYYY-MM-DD hh:mm:ss``
     * ``YYYY-MM-DD hh:mm:ss.sss``
 
-    When the time, you can set timezone as ``Z`` or ``±hh:mm``.
+    When specifying the time, you can set timezone as ``Z`` or ``±hh:mm``.
 
     E.g.:
 
